@@ -1,20 +1,67 @@
-// ski-lifts-and-mountains.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 
-int main()
-{
-    std::cout << "Hello World!\n";
+#define INF 1000000000
+#define MAX_W 100
+#define MAX_H 100
+#define MAX_LIFTS 100
+
+using namespace std;
+
+struct Lift {
+    int startCol, startRow;
+    int endCol, endRow;
+    int travelTime;
+    int interval;
+};
+
+void readInput(int& width, int& height, int& startCol, int& startRow, int& endCol, int& endRow, int& numLifts, Lift lifts[MAX_LIFTS], int map[MAX_H][MAX_W]) {
+    
+    cin >> width >> height;
+    cin >> startCol >> startRow;
+    cin >> endCol >> endRow;
+    cin >> numLifts;
+
+    for (int i = 0; i < numLifts; ++i) {
+        cin >> lifts[i].startCol >> lifts[i].startRow >> lifts[i].endCol >> lifts[i].endRow >> lifts[i].travelTime >> lifts[i].interval;
+    }
+
+    for (int row = 0; row < height; ++row) {
+        for (int col = 0; col < width; ++col) {
+            cin >> map[row][col];
+        }
+    }
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+int computeCost(int from, int to) {
+    if (to > from) {
+        return (to - from) + 1;
+    }
+    else {
+        return 1;
+    }
+}
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+
+
+
+int main() {
+    int width, height;
+    int startCol, startRow;
+    int endCol, endRow;
+    int numLifts;
+
+    Lift lifts[MAX_LIFTS];
+    int map[MAX_H][MAX_W];
+
+    readInput(width, height, startCol, startRow, endCol, endRow, numLifts, lifts, map);
+
+    for (int row = 0; row < height; ++row) {
+        for (int col = 0; col < width; ++col) {
+            cout << map[row][col];
+        }
+        cout << endl;
+    }
+    
+
+    return 0;
+}
