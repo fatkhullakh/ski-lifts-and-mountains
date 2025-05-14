@@ -21,7 +21,7 @@ struct Lift {
 };
 
 void readInput(int& width, int& height, int& startCol, int& startRow, int& endCol, int& endRow, int& numLifts, Lift lifts[MAX_LIFTS], int map[MAX_H][MAX_W]) {
-    
+
     cin >> width >> height;
     cin >> startCol >> startRow;
     cin >> endCol >> endRow;
@@ -149,8 +149,31 @@ int dijkstra(int width, int height, int startRow, int startCol, int endRow, int 
             }
         }
 
+        // Check available lifts from current cell
+        for (int i = 0; i < numLifts; ++i) {
+            Lift& lift = lifts[i];
+
+            if (lift.startRow == r && lift.startCol == c) {
+                int waitTime = 0;
+                if (time % lift.interval != 0) {
+                    waitTime = lift.interval - (time % lift.interval);
+                }
+
+                int arrivalTime = time + waitTime + lift.travelTime;
+
+                int destR = lift.endRow;
+                int destC = lift.endCol;
+
+                if (arrivalTime < dist[destR][destC]) {
+                    dist[destR][destC] = arrivalTime;
+                    push(heap, heapSize, { arrivalTime, destR, destC });
+                }
+            }
+        }
+
+
     }
-    
+
 
     return -1;
 
