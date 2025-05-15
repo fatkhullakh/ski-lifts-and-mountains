@@ -1,10 +1,6 @@
 #include <iostream>
-
 #define INF 1000000000
-#define MAX_W 100
-#define MAX_H 100
-#define MAX_LIFTS 100
-
+#define MAX_LIFTS 10001
 using namespace std;
 
 struct Node {
@@ -20,25 +16,8 @@ struct Lift {
     int interval;
 };
 
-void readInput(int& width, int& height, int& startCol, int& startRow, int& endCol, int& endRow, int& numLifts, Lift lifts[MAX_LIFTS], int map[MAX_H][MAX_W]) {
-
-    cin >> width >> height;
-    cin >> startCol >> startRow;
-    cin >> endCol >> endRow;
-    cin >> numLifts;
-
-    for (int i = 0; i < numLifts; ++i) {
-        cin >> lifts[i].startCol >> lifts[i].startRow >> lifts[i].endCol >> lifts[i].endRow >> lifts[i].travelTime >> lifts[i].interval;
-    }
-
-    for (int row = 0; row < height; ++row) {
-        for (int col = 0; col < width; ++col) {
-            cin >> map[row][col];
-        }
-    }
-}
-
 int computeCost(int from, int to) {
+
     if (to > from) {
         return (to - from) + 1;
     }
@@ -83,7 +62,7 @@ Node pop(Node heap[], int& heapSize) {
     return result;
 }
 
-void push(Node heap[], int& heapSize, Node n) {
+void push(Node heap[], int& heapSize, const Node& n) {
     int i = heapSize;
     heap[i] = n;
 
@@ -103,12 +82,20 @@ void push(Node heap[], int& heapSize, Node n) {
     heapSize++;
 }
 
-int dijkstra(int width, int height, int startRow, int startCol, int endRow, int endCol, Lift lifts[MAX_LIFTS], int numLifts, int map[MAX_H][MAX_W]) {
-    Node heap[MAX_H * MAX_W];
-    int heapSize = 0;
+int dijkstra(
+    int width, int height,
+    int startRow, int startCol,
+    int endRow, int endCol,
+    Lift lifts[], int numLifts,
+    int** map, int** dist, bool** visited
+) {
 
-    int dist[MAX_H][MAX_W];
-    bool visited[MAX_H][MAX_W];
+    Node* heap = new Node[width * height];
+    if (startRow == endRow && startCol == endCol) {
+        delete[] heap;
+        return 0;
+    }
+    int heapSize = 0;
 
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
@@ -130,6 +117,7 @@ int dijkstra(int width, int height, int startRow, int startCol, int endRow, int 
         visited[r][c] = true;
 
         if (r == endRow && c == endCol) {
+            delete[] heap;
             return time;
         }
 
@@ -142,14 +130,13 @@ int dijkstra(int width, int height, int startRow, int startCol, int endRow, int 
 
             if (nr >= 0 && nr < height && nc >= 0 && nc < width) {
                 int newTime = time + computeCost(map[r][c], map[nr][nc]);
-                if (newTime < dist[nr][nc]) {
+                if (!visited[nr][nc] && newTime < dist[nr][nc]) {
                     dist[nr][nc] = newTime;
                     push(heap, heapSize, { newTime, nr, nc });
                 }
             }
         }
 
-        // Check available lifts from current cell
         for (int i = 0; i < numLifts; ++i) {
             Lift& lift = lifts[i];
 
@@ -158,6 +145,7 @@ int dijkstra(int width, int height, int startRow, int startCol, int endRow, int 
                 if (time % lift.interval != 0) {
                     waitTime = lift.interval - (time % lift.interval);
                 }
+
 
                 int arrivalTime = time + waitTime + lift.travelTime;
 
@@ -170,17 +158,10 @@ int dijkstra(int width, int height, int startRow, int startCol, int endRow, int 
                 }
             }
         }
-
-
     }
-
-
+    delete[] heap;
     return -1;
-
-
 }
-
-
 
 int main() {
     int width, height;
@@ -189,13 +170,44 @@ int main() {
     int numLifts;
 
     Lift lifts[MAX_LIFTS];
-    int map[MAX_H][MAX_W];
 
-    readInput(width, height, startCol, startRow, endCol, endRow, numLifts, lifts, map);
+    cin >> width >> height;
 
-    int result = dijkstra(width, height, startRow, startCol, endRow, endCol, lifts, numLifts, map);
+    int** map = new int* [height];
+    int** dist = new int* [height];
+    bool** visited = new bool* [height];
+
+    for (int i = 0; i < height; ++i) {
+        map[i] = new int[width];
+        dist[i] = new int[width];
+        visited[i] = new bool[width];
+    }
+
+    cin >> startCol >> startRow;
+    cin >> endCol >> endRow;
+    cin >> numLifts;
+
+    for (int i = 0; i < numLifts; ++i) {
+        cin >> lifts[i].startCol >> lifts[i].startRow >> lifts[i].endCol >> lifts[i].endRow >> lifts[i].travelTime >> lifts[i].interval;
+    }
+
+    for (int row = 0; row < height; ++row) {
+        for (int col = 0; col < width; ++col) {
+            cin >> map[row][col];
+        }
+    }
+
+    int result = dijkstra(width, height, startRow, startCol, endRow, endCol, lifts, numLifts, map, dist, visited);
     cout << result << endl;
 
+    for (int i = 0; i < height; ++i) {
+        delete[] map[i];
+        delete[] dist[i];
+        delete[] visited[i];
+    }
+    delete[] map;
+    delete[] dist;
+    delete[] visited;
 
     return 0;
 }
